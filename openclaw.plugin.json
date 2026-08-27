@@ -1,0 +1,48 @@
+{
+  "id": "commandcode",
+  "name": "Command Code",
+  "description": "Add Command Code models to OpenClaw.",
+  "version": "0.1.0",
+  "providers": [
+    "commandcode",
+    "commandcode-anthropic"
+  ],
+  "setup": {
+    "providers": [
+      {
+        "id": "commandcode",
+        "envVars": [
+          "COMMANDCODE_API_KEY"
+        ]
+      },
+      {
+        "id": "commandcode-anthropic",
+        "envVars": [
+          "COMMANDCODE_API_KEY"
+        ]
+      }
+    ]
+  },
+  "configSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {}
+  },
+  "activation": {
+    "onStartup": true,
+    "providers": [
+      "commandcode"
+    ],
+    "capabilities": [
+      "provider"
+    ]
+  },
+  "providerAuthAliases": {
+    "commandcode-anthropic": "commandcode"
+  },
+  "modelSupport": {
+    "modelPrefixes": [
+      "commandcode/"
+    ]
+  }
+}

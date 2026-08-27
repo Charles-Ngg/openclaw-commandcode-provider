@@ -1,0 +1,65 @@
+{
+  "name": "openclaw-plugin-commandcode",
+  "version": "0.1.0",
+  "description": "OpenClaw provider plugin for Command Code.",
+  "type": "module",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "vitest run --config ./vitest.config.ts",
+    "validate": "npm run build && clawhub package validate . --out .clawhub-validation"
+  },
+  "files": [
+    "dist",
+    "openclaw.plugin.json",
+    "README.md"
+  ],
+  "peerDependencies": {
+    "openclaw": ">=2026.7.1-2"
+  },
+  "peerDependenciesMeta": {
+    "openclaw": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "clawhub": "latest",
+    "openclaw": "latest",
+    "typescript": "^5.9.0",
+    "vitest": "^3.2.0"
+  },
+  "openclaw": {
+    "extensions": [
+      "./dist/index.js"
+    ],
+    "install": {
+      "clawhubSpec": "clawhub:openclaw-plugin-commandcode",
+      "defaultChoice": "clawhub",
+      "minHostVersion": ">=2026.7.1-2"
+    },
+    "compat": {
+      "pluginApi": ">=2026.7.1-2"
+    },
+    "build": {
+      "openclawVersion": "2026.7.1-2"
+    },
+    "release": {
+      "publishToClawHub": true
+    }
+  },
+  "pluginInspector": {
+    "version": 1,
+    "plugin": {
+      "id": "commandcode",
+      "priority": "high",
+      "seams": [
+        "plugin-runtime"
+      ],
+      "sourceRoot": ".",
+      "expect": {
+        "registrations": [
+          "registerProvider"
+        ]
+      }
+    }
+  }
+}
