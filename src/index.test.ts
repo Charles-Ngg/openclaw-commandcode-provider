@@ -59,6 +59,20 @@ describe("commandcode plugin entry", () => {
     expect(anthropic.baseUrl).toBe("https://api.commandcode.ai/provider");
   });
 
+  it("resolves dynamic models with correct context window", () => {
+    const [provider] = registerProviders();
+    const resolve = provider.resolveDynamicModel!;
+
+    const flash = resolve({ provider: "commandcode", modelId: "deepseek/deepseek-v4-flash" } as never);
+    expect(flash.contextWindow).toBe(1_000_000);
+
+    const glm = resolve({ provider: "commandcode", modelId: "z-ai/glm-5.3-flash" } as never);
+    expect(glm.contextWindow).toBe(1_050_000);
+
+    const unknown = resolve({ provider: "commandcode", modelId: "some/future-model" } as never);
+    expect(unknown.contextWindow).toBe(128_000);
+  });
+
   it("returns null catalog without a key", async () => {
     const [provider] = registerProviders();
     const result = await provider.catalog!.run(catalogContext());

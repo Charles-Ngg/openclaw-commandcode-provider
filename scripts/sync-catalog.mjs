@@ -137,6 +137,10 @@ function renderCatalog(rows, cliVersion) {
   const maxTokensEntries = Object.entries(MAX_OUTPUT_TOKENS)
     .map(([id, n]) => `  ${JSON.stringify(id)}: ${n},`)
     .join("\n");
+  const contextEntries = rows
+    .filter((r) => r.context !== undefined)
+    .map((r) => `  ${JSON.stringify(r.id)}: ${r.context},`)
+    .join("\n");
 
   return `/**
  * Static Command Code model metadata.
@@ -173,6 +177,15 @@ ${effortsEntries || '  // (none — all models decide their own reasoning depth)
 
 export const MODEL_MAX_OUTPUT_TOKENS: Readonly<Record<string, number>> = {
 ${maxTokensEntries}
+};
+
+/**
+ * Known context windows (tokens) from models.md. Used as a static fallback
+ * when live discovery is unavailable or the id is not in the live catalog
+ * yet (resolveDynamicModel path).
+ */
+export const MODEL_CONTEXT_WINDOWS: Readonly<Record<string, number>> = {
+${contextEntries}
 };
 `;
 }

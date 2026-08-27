@@ -25,6 +25,7 @@ import { join } from "node:path";
 
 import {
   apiForModelId,
+  contextWindowForModel,
   DEFAULT_MODELS_URL,
   DEFAULT_PROVIDER_API_BASE,
   fetchCommandCodeModels,
@@ -156,6 +157,7 @@ export default definePluginEntry({
       resolveDynamicModel: (ctx) => {
         const api = apiForModelId(ctx.modelId);
         const baseUrl = baseUrlForApi(DEFAULT_PROVIDER_API_BASE, api);
+        const contextWindow = contextWindowForModel(ctx.modelId) ?? 128_000;
         return {
           id: ctx.modelId,
           name: ctx.modelId,
@@ -165,8 +167,8 @@ export default definePluginEntry({
           reasoning: false,
           input: ["text"],
           cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
-          contextWindow: 128_000,
-          maxTokens: 8192,
+          contextWindow,
+          maxTokens: Math.min(contextWindow, 65_536),
         };
       },
     });

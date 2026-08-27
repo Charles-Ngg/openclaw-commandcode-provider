@@ -9,6 +9,7 @@
 import type { ModelDefinitionConfig } from "openclaw/plugin-sdk/provider-model-shared";
 
 import {
+  MODEL_CONTEXT_WINDOWS,
   MODEL_EFFORTS,
   MODEL_INPUT_MODALITIES,
   MODEL_MAX_OUTPUT_TOKENS,
@@ -117,6 +118,14 @@ export function commandCodeModelsFromApiResponse(
   });
 }
 
+/**
+ * Static context window fallback for ids not present in the live catalog
+ * (dynamic model resolution path). Prefers the live/known value.
+ */
+export function contextWindowForModel(modelId: string): number | undefined {
+  return MODEL_CONTEXT_WINDOWS[modelId];
+}
+
 export function toModelDefinition(model: RawCommandCodeModel): ModelDefinitionConfig {
   const thinkingLevelMap = thinkingLevelMapForModel(model.id);
   return {
@@ -132,7 +141,6 @@ export function toModelDefinition(model: RawCommandCodeModel): ModelDefinitionCo
     ...(thinkingLevelMap ? { thinkingLevelMap } : {}),
   };
 }
-
 export async function fetchCommandCodeModels(options: {
   url?: string;
   signal?: AbortSignal;
