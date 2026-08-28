@@ -73,6 +73,23 @@ describe("commandcode plugin entry", () => {
     expect(unknown.contextWindow).toBe(128_000);
   });
 
+  it("resolves thinking profiles per model", () => {
+    const [provider] = registerProviders();
+    const resolve = provider.resolveThinkingProfile!;
+
+    const deepseek = resolve({ provider: "commandcode", modelId: "deepseek/deepseek-v4-flash" } as never);
+    expect(deepseek?.levels.map((l) => l.id)).toEqual(["high", "max"]);
+
+    const sol = resolve({ provider: "commandcode", modelId: "gpt-5.6-sol" } as never);
+    expect(sol?.levels.map((l) => l.id)).toEqual(["low", "medium", "high", "xhigh", "max"]);
+
+    const glm = resolve({ provider: "commandcode", modelId: "z-ai/glm-5.3-flash" } as never);
+    expect(glm?.levels.map((l) => l.id)).toEqual(["low", "high", "max"]);
+
+    const unknown = resolve({ provider: "commandcode", modelId: "some/future" } as never);
+    expect(unknown?.levels.map((l) => l.id)).toEqual(["off"]);
+  });
+
   it("returns null catalog without a key", async () => {
     const [provider] = registerProviders();
     const result = await provider.catalog!.run(catalogContext());

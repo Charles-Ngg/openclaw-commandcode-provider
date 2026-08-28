@@ -59,19 +59,55 @@ function maxOutputTokensForModel(modelId: string, contextLength: number): number
 
 /**
  * Maps Command Code reasoning efforts to OpenClaw thinking levels
- * (`low`/`medium`/`high`/`xhigh`/`max`). Unknown efforts become `null`.
+ * (`minimal`/`low`/`medium`/`high`/`xhigh`/`max`). Unsupported levels and
+ * `off` become `null`.
  */
 export function thinkingLevelMapForModel(
   modelId: string,
 ): ModelDefinitionConfig["thinkingLevelMap"] {
   const efforts = MODEL_EFFORTS[modelId];
   if (!efforts) return undefined;
-  const levels = ["low", "medium", "high", "xhigh", "max"] as const;
+  const levels = ["minimal", "low", "medium", "high", "xhigh", "max"] as const;
   const map: NonNullable<ModelDefinitionConfig["thinkingLevelMap"]> = {};
   for (const level of levels) {
     map[level] = efforts.includes(level) ? level : null;
   }
   return map;
+}
+
+export function reasoningForModel(modelId: string): boolean {
+  return MODEL_REASONING[modelId] === true;
+}
+
+const THINKING_RANKS: Record<string, number> = {
+  off: 0,
+  minimal: 1,
+  low: 2,
+  medium: 3,
+  high: 4,
+  xhigh: 5,
+  max: 6,
+};
+
+/**
+ * Provider thinking profile for a model: the ordered set of thinking levels
+ * the model supports (from MODEL_EFFORTS), plus a default of `medium` when
+ * the model reasons. Unknown models get a plain `off`-only profile.
+ */
+export function thinkingProfileForModel(modelId: string): {
+  levels: { id: string; label: string; rank: number }[];
+  defaultLevel: string | null;
+} {
+  const efforts = MODEL_EFFORTS[modelId];
+  if (!efforts) {
+    return { levels: [{ id: "off", label: "off", rank: 0 }], defaultLevel: null };
+  }
+  const levels = efforts.map((effort) => ({
+    id: effort,
+    label: effort,
+    rank: THINKING_RANKS[effort] ?? 0,
+  }));
+  return { levels, defaultLevel: levels.length > 0 ? "medium" : null };
 }
 
 export interface RawCommandCodeModel {
@@ -133,7 +169,7 @@ export function toModelDefinition(model: RawCommandCodeModel): ModelDefinitionCo
     name: `${model.name} (Command Code)`,
     api: apiForModelId(model.id),
     baseUrl: baseUrlForModel(DEFAULT_PROVIDER_API_BASE, apiForModelId(model.id)),
-    reasoning: isReasoningModel(model.id),
+    reasoning: reasoningForModel(model.id),
     input: [...inputModalitiesForModel(model.id)],
     cost: MODEL_COSTS[model.id] ?? ZERO_MODEL_COST,
     contextWindow: model.context_length,

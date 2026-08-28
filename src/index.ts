@@ -29,6 +29,9 @@ import {
   DEFAULT_MODELS_URL,
   DEFAULT_PROVIDER_API_BASE,
   fetchCommandCodeModels,
+  reasoningForModel,
+  thinkingLevelMapForModel,
+  thinkingProfileForModel,
   toModelDefinition,
 } from "./models.ts";
 
@@ -158,17 +161,27 @@ export default definePluginEntry({
         const api = apiForModelId(ctx.modelId);
         const baseUrl = baseUrlForApi(DEFAULT_PROVIDER_API_BASE, api);
         const contextWindow = contextWindowForModel(ctx.modelId) ?? 128_000;
+        const thinkingLevelMap = thinkingLevelMapForModel(ctx.modelId);
         return {
           id: ctx.modelId,
           name: ctx.modelId,
           provider: api === "anthropic-messages" ? PROVIDER_ANTHROPIC : PROVIDER_OPENAI,
           api,
           baseUrl,
-          reasoning: false,
+          reasoning: reasoningForModel(ctx.modelId),
           input: ["text"],
           cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
           contextWindow,
           maxTokens: Math.min(contextWindow, 65_536),
+          ...(thinkingLevelMap ? { thinkingLevelMap } : {}),
+        };
+      },
+
+      resolveThinkingProfile: (ctx) => {
+        const profile = thinkingProfileForModel(ctx.modelId);
+        return {
+          levels: profile.levels as { id: "off" | "minimal" | "low" | "medium" | "high" | "xhigh" | "max"; label: string; rank: number }[],
+          defaultLevel: profile.defaultLevel as "off" | "minimal" | "low" | "medium" | "high" | "xhigh" | "max" | null,
         };
       },
     });
